@@ -88,7 +88,7 @@ class IjaiCloudVacuum(BaseXiaomiCloudVacuumV2):
     def get_wifi_info_sn(self):
         wifi_info_sn = None
 
-        # aggressivly searching for Serial Number in first siid
+        # aggressively searching for Serial Number in first siid
         # 1,3 on 2019 - 2021 vacuums; 1,5 on 2022 and newer vacuums
         piids = [3, 5]
 
