@@ -27,6 +27,7 @@ from .vacuums.vacuum_roborock import RoborockCloudVacuum
 from .vacuums.vacuum_roidmi import RoidmiCloudVacuum
 from .vacuums.vacuum_unsupported import UnsupportedCloudVacuum
 from .vacuums.vacuum_viomi import ViomiCloudVacuum
+from .vacuums.vacuum_ijai import IjaiCloudVacuum
 from .xiaomi_cloud.connector import XiaomiCloudConnector, XiaomiCloudDeviceInfo
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,6 +37,7 @@ AVAILABLE_VACUUM_PLATFORMS: dict[VacuumApi, Type[BaseXiaomiCloudVacuum]] = {v.va
     ViomiCloudVacuum,
     RoidmiCloudVacuum,
     DreameCloudVacuum,
+    IjaiCloudVacuum,
     UnsupportedCloudVacuum
 ]}
 
