@@ -392,9 +392,9 @@ class XiaomiCloudConnector:
     @staticmethod
     async def from_config(config: XiaomiCloudConnectorConfig, session_creator: Callable[[], ClientSession]):
         connector = XiaomiCloudConnector(session_creator,
-                                        config.username,
-                                        config.password,
-                                        server=config.server)
+                                         config.username,
+                                         config.password,
+                                         server=config.server)
         connector.device_id = config.device_id
 
         await connector.create_session()
