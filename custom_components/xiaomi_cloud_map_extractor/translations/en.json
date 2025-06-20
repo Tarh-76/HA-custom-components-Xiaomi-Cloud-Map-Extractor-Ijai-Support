@@ -8,6 +8,7 @@
     "error": {
       "cloud_login_error": "Could not login to Xiaomi Miio Cloud, check the credentials.",
       "two_factor_auth_required": "Two factor authentication required. Use the following url and try again {two_factor_url}.",
+      "captcha_required": "Captcha required. Solve a captcha and try again.",
       "cloud_no_devices": "No vacuums found in this Xiaomi Miio cloud account.",
       "invalid_vacuum": "Connection to vacuum failed, please check the configuration."
     },
@@ -20,6 +21,12 @@
           "username": "Username"
         },
         "description": "Log in to the Xiaomi Miio cloud, see https://www.openhab.org/addons/bindings/miio/#country-servers for the cloud server to use."
+      },
+      "captcha": {
+        "data": {
+          "code": "Captcha code"
+        },
+        "description": "Input code from picture below\n![]({captcha_url})"
       },
       "confirm_data": {
         "data": {

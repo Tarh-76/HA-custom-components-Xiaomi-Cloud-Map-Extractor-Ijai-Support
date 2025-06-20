@@ -12,6 +12,8 @@ from vacuum_map_parser_base.config.size import Sizes
 from vacuum_map_parser_base.config.text import Text
 from vacuum_map_parser_base.map_data import MapData
 
+from .xiaomi_cloud.connector import XiaomiCloudConnectorConfig
+
 from .vacuums.base.model import VacuumApi
 
 
@@ -32,9 +34,7 @@ class XiaomiCloudMapExtractorConnectorStatus(IntEnum):
 class XiaomiCloudMapExtractorConnectorConfiguration:
     host: str
     token: str
-    username: str
-    password: str
-    server: str
+    connector_config: XiaomiCloudConnectorConfig
     used_api: VacuumApi
     device_id: str
     mac: str

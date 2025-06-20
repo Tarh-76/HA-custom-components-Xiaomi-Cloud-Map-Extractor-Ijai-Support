@@ -6,10 +6,8 @@ from homeassistant.const import (
     CONF_HOST,
     CONF_TOKEN,
     CONF_MAC,
-    CONF_USERNAME,
-    CONF_PASSWORD,
     CONF_MODEL,
-    CONF_DEVICE_ID
+    CONF_DEVICE_ID,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
@@ -21,8 +19,8 @@ from vacuum_map_parser_base.config.size import Sizes, Size
 from .connector import XiaomiCloudMapExtractorConnector
 from .connector.model import XiaomiCloudMapExtractorConnectorConfiguration
 from .connector.vacuums.base.model import VacuumApi
+from .connector.xiaomi_cloud.connector import XiaomiCloudConnectorConfig
 from .const import (
-    CONF_SERVER,
     CONF_USED_MAP_API,
     PLATFORMS,
     CONF_SIZES,
@@ -35,7 +33,8 @@ from .const import (
     CONF_IMAGE_CONFIG_TRIM_RIGHT,
     CONF_IMAGE_CONFIG_TRIM_TOP,
     CONF_IMAGE_CONFIG_TRIM_BOTTOM,
-    CONF_ROOM_COLORS
+    CONF_ROOM_COLORS,
+    CONF_CONNECTOR_CONFIG
 )
 from .coordinator import XiaomiCloudMapExtractorDataUpdateCoordinator
 from .types import XiaomiCloudMapExtractorConfigEntry, XiaomiCloudMapExtractorRuntimeData
@@ -70,9 +69,7 @@ def to_configuration(entry: XiaomiCloudMapExtractorConfigEntry) -> XiaomiCloudMa
     device_id = entry.data[CONF_DEVICE_ID]
     model = entry.data[CONF_MODEL]
     mac = entry.data[CONF_MAC]
-    username = entry.data[CONF_USERNAME]
-    password = entry.data[CONF_PASSWORD]
-    server = entry.data[CONF_SERVER]
+    connector_config = XiaomiCloudConnectorConfig.from_dict(entry.data[CONF_CONNECTOR_CONFIG])
     used_api = VacuumApi(entry.data[CONF_USED_MAP_API])
 
     scale = entry.options[CONF_IMAGE_CONFIG][CONF_IMAGE_CONFIG_SCALE]
@@ -96,9 +93,7 @@ def to_configuration(entry: XiaomiCloudMapExtractorConfigEntry) -> XiaomiCloudMa
     config = XiaomiCloudMapExtractorConnectorConfiguration(
         host,
         token,
-        username,
-        password,
-        server,
+        connector_config,
         used_api,
         device_id,
         mac,
