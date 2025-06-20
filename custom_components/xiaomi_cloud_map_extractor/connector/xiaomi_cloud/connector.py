@@ -28,6 +28,7 @@ from ..utils.exceptions import (
 
 _LOGGER = logging.getLogger(__name__)
 
+
 @dataclass
 class XiaomiCloudConnectorConfig:
     username: str
@@ -150,7 +151,7 @@ class XiaomiCloudConnector:
         _LOGGER.debug("Xiaomi cloud login - step 1 sign missing")
         return ""
 
-    async def _login_step_2(self: Self, sign: str, captcha_code: str|None = None) -> str:
+    async def _login_step_2(self: Self, sign: str, captcha_code: str | None = None) -> str:
         _LOGGER.debug("Xiaomi cloud login - step 2")
         url = "https://account.xiaomi.com/pass/serviceLoginAuth2"
         params = {
@@ -193,10 +194,9 @@ class XiaomiCloudConnector:
                     captcha_url = response_json["captchaUrl"]
                     if captcha_url.startswith("/"):
                         captcha_url = "https://account.xiaomi.com" + response_json["captchaUrl"]
-                    
+
                     captcha_response = await self._session_data.get(captcha_url)
                     captcha_response_b64 = "data:image/jpeg;base64," + base64.b64encode(await captcha_response.read()).decode("utf-8")
-
 
                     raise CaptchaRequiredException(captcha_response_b64, sign)
         raise InvalidCredentialsException()
@@ -226,13 +226,13 @@ class XiaomiCloudConnector:
         await self._login_step_3(location)
         _LOGGER.debug("Logged in.")
         return self._session_data.serviceToken
-    
+
     async def login_with_captcha(self: Self, sign: str, captcha_code: str) -> str | None:
         _LOGGER.debug("Continuing login with captcha entered.")
-        
+
         location = await self._login_step_2(sign, captcha_code)
         await self._login_step_3(location)
-        
+
         _LOGGER.debug("Logged in.")
         return self._session_data.serviceToken
 
@@ -389,7 +389,6 @@ class XiaomiCloudConnector:
             self.device_id
         )
 
-
     @staticmethod
     async def from_config(config: XiaomiCloudConnectorConfig, session_creator: Callable[[], ClientSession]):
         connector = XiaomiCloudConnector(session_creator,
@@ -397,13 +396,12 @@ class XiaomiCloudConnector:
                                         config.password,
                                         server=config.server)
         connector.device_id = config.device_id
-        
+
         await connector.create_session()
-        
+
         connector._session_data.userId = config.user_id
         connector._session_data.serviceToken = config.service_token
         connector._session_data.ssecurity = config.ssecurity
         connector._session_data.expiration = config.expiration
 
         return connector
-

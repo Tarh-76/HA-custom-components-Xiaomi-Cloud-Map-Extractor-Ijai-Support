@@ -4,8 +4,6 @@ from homeassistant.const import (
     CONF_HOST,
     CONF_TOKEN,
     CONF_MAC,
-    CONF_USERNAME,
-    CONF_PASSWORD,
     CONF_MODEL,
     CONF_DEVICE_ID, CONF_NAME
 )

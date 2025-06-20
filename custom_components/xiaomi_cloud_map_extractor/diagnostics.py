@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.const import (CONF_TOKEN, CONF_MODEL, CONF_PASSWORD, CONF_USERNAME, CONF_MAC)
+from homeassistant.const import (CONF_TOKEN, CONF_MODEL, CONF_MAC)
 from homeassistant.core import HomeAssistant
 
 from .const import CONF_USED_MAP_API, CONF_CONNECTOR_CONFIG

@@ -127,8 +127,8 @@ class XiaomiCloudMapExtractorFlowHandler(ConfigFlow, domain=DOMAIN):
                 description_placeholders={"two_factor_url": e.url}
             )
         except CaptchaRequiredException as e:
-            self._captcha_image=e.captcha_image
-            self._sign=e.sign
+            self._captcha_image = e.captcha_image
+            self._sign = e.sign
             return await self.async_step_captcha()
         except XiaomiCloudMapExtractorException:
             errors["base"] = "cloud_login_error"
@@ -140,9 +140,7 @@ class XiaomiCloudMapExtractorFlowHandler(ConfigFlow, domain=DOMAIN):
 
         return await self._post_login()
 
-
     async def async_step_captcha(self, user_input=None):
-        """Шаг «ввод капчи»."""
         errors = {}
 
         if user_input is None:
@@ -172,7 +170,6 @@ class XiaomiCloudMapExtractorFlowHandler(ConfigFlow, domain=DOMAIN):
 
         return await self._post_login()
 
-
     async def _post_login(self) -> ConfigFlowResult:
         errors = {}
         try:
@@ -195,7 +192,6 @@ class XiaomiCloudMapExtractorFlowHandler(ConfigFlow, domain=DOMAIN):
             return await self.async_step_confirm_data()
 
         return await self.async_step_select_vacuum()
-
 
     async def async_step_select_vacuum(
             self, user_input: dict[str, Any] | None = None
