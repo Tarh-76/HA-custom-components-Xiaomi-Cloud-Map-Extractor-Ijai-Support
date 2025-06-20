@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+from functools import partial
+from dataclasses import asdict
 
 from homeassistant.const import (
     CONF_HOST,
@@ -44,8 +46,12 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass: HomeAssistant, entry: XiaomiCloudMapExtractorConfigEntry) -> bool:
     xcme_configuration = to_configuration(entry)
+    
     session_creator = lambda: async_create_clientsession(hass)
-    xcme_connector = XiaomiCloudMapExtractorConnector(session_creator, xcme_configuration)
+
+    session_update_callback = partial(on_connector_session_update, hass, entry)
+    xcme_connector = XiaomiCloudMapExtractorConnector(session_creator, session_update_callback, xcme_configuration)
+
     xcme_update_coordinator = XiaomiCloudMapExtractorDataUpdateCoordinator(hass, xcme_connector)
     await xcme_update_coordinator.async_config_entry_first_refresh()
     entry.runtime_data = XiaomiCloudMapExtractorRuntimeData(xcme_update_coordinator)
@@ -62,6 +68,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: XiaomiCloudMapExtractor
 async def async_reload_entry(hass: HomeAssistant, entry: XiaomiCloudMapExtractorConfigEntry) -> None:
     await hass.config_entries.async_reload(entry.entry_id)
 
+def on_connector_session_update(hass: HomeAssistant, entry: XiaomiCloudMapExtractorConfigEntry, new_config: XiaomiCloudConnectorConfig) -> None:
+    updated_config = {**entry.data, CONF_CONNECTOR_CONFIG: asdict(new_config)}
+    hass.config_entries.async_update_entry(entry, data=updated_config)
 
 def to_configuration(entry: XiaomiCloudMapExtractorConfigEntry) -> XiaomiCloudMapExtractorConnectorConfiguration:
     host = entry.data[CONF_HOST]
