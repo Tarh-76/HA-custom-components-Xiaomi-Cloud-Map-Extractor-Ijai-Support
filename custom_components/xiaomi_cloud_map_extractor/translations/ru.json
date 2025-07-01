@@ -1,0 +1,205 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Устройство уже настроено",
+      "already_in_progress": "Процесс настройки уже запущен",
+      "unknown": "Непредвиденная ошибка"
+    },
+    "error": {
+      "cloud_login_error": "Не удалось войти в Xiaomi Miio Cloud, проверьте учётные данные.",
+      "two_factor_auth_required": "Требуется двухфакторная аутентификация. Откройте URL: {two_factor_url} и повторите попытку.",
+      "captcha_required": "Требуется ввод капчи. Решите капчу и повторите попытку.",
+      "cloud_no_devices": "В аккаунте Xiaomi Miio Cloud не найдено пылесосов.",
+      "invalid_vacuum": "Не удалось подключиться к пылесосу, проверьте конфигурацию."
+    },
+    "flow_title": "{name}",
+    "step": {
+      "cloud": {
+        "data": {
+          "country": "Сервер",
+          "password": "Пароль",
+          "username": "Логин"
+        },
+        "description": "Войдите в Xiaomi Miio Cloud. Серверы по странам: https://www.openhab.org/addons/bindings/miio/#country-servers."
+      },
+      "captcha": {
+        "data": {
+          "code": "Код с картинки"
+        },
+        "description": "Введите код с изображения ниже\n![]({captcha_url})"
+      },
+      "confirm_data": {
+        "data": {
+          "host": "IP-адрес",
+          "token": "API-токен",
+          "used_map_api": "Используемый API карт"
+        },
+        "data_description": {
+          "used_map_api": "API для расшифровки карты. (*) - определён автоматически"
+        },
+        "description": "Подтвердите конфигурацию обнаруженного устройства."
+      },
+      "reauth_confirm": {
+        "description": "Для интеграции Xiaomi Cloud Map Extractor требуется повторная аутентификация для обновления токенов или добавления учётных данных.",
+        "title": "Срок аутентификации истёк: {name}"
+      },
+      "select_vacuum": {
+        "data": {
+          "select_vacuum": "Робот-пылесос"
+        },
+        "description": "Выберите робот-пылесос для настройки."
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "left_and_right_sum_over_100": "Сумма обрезки слева и справа превышает 100%",
+      "top_and_bottom_sum_over_100": "Сумма обрезки сверху и снизу превышает 100%",
+      "some_room_ids_are_not_integers": "Некоторые ID комнат не являются целыми числами"
+    },
+    "step": {
+      "init": {
+        "description": "Настройка параметров",
+        "menu_options": {
+          "image_config": "Размеры изображения",
+          "colors": "Цвета элементов",
+          "room_colors_step1": "Цвета комнат",
+          "drawables": "Отображаемые элементы",
+          "sizes": "Размеры элементов"
+        }
+      },
+      "image_config": {
+        "description": "Настройка изображения",
+        "data": {
+          "scale": "Масштаб",
+          "rotate": "Поворот",
+          "trim_left": "Обрезка слева",
+          "trim_right": "Обрезка справа",
+          "trim_top": "Обрезка сверху",
+          "trim_bottom": "Обрезка снизу"
+        }
+      },
+      "colors": {
+        "description": "Выберите цвета и прозрачность элементов карты",
+        "data": {
+          "color_carpets": "Ковры",
+          "color_carpets_alpha": "Прозрачность ковров",
+          "color_charger": "Зарядная станция",
+          "color_charger_alpha": "Прозрачность зарядной станции",
+          "color_charger_outline": "Контур зарядной станции",
+          "color_charger_outline_alpha": "Прозрачность контура",
+          "color_cleaned_area": "Очищенная зона",
+          "color_cleaned_area_alpha": "Прозрачность очищенной зоны",
+          "color_goto_path": "Путь к цели",
+          "color_goto_path_alpha": "Прозрачность пути к цели",
+          "color_grey_wall": "Серая стена",
+          "color_grey_wall_alpha": "Прозрачность серой стены",
+          "color_ignored_obstacle": "Игнорируемое препятствие",
+          "color_ignored_obstacle_alpha": "Прозрачность игнорируемого препятствия",
+          "color_ignored_obstacle_with_photo": "Игнорируемое препятствие (с фото)",
+          "color_ignored_obstacle_with_photo_alpha": "Прозрачность (препятствие с фото)",
+          "color_map_inside": "Внутренняя зона",
+          "color_map_inside_alpha": "Прозрачность внутренней зоны",
+          "color_map_outside": "Внешняя зона",
+          "color_map_outside_alpha": "Прозрачность внешней зоны",
+          "color_map_wall": "Стены",
+          "color_map_wall_alpha": "Прозрачность стен",
+          "color_map_wall_v2": "Стены (v2)",
+          "color_map_wall_v2_alpha": "Прозрачность стен (v2)",
+          "color_mop_path": "Путь мытья",
+          "color_mop_path_alpha": "Прозрачность пути мытья",
+          "color_new_discovered_area": "Новая зона",
+          "color_new_discovered_area_alpha": "Прозрачность новой зоны",
+          "color_no_carpet_zones": "Зоны без ковров",
+          "color_no_carpet_zones_alpha": "Прозрачность зон без ковров",
+          "color_no_carpet_zones_outline": "Контур зон без ковров",
+          "color_no_carpet_zones_outline_alpha": "Прозрачность контура",
+          "color_no_go_zones": "Запретные зоны",
+          "color_no_go_zones_alpha": "Прозрачность запретных зон",
+          "color_no_go_zones_outline": "Контур запретных зон",
+          "color_no_go_zones_outline_alpha": "Прозрачность контура",
+          "color_no_mop_zones": "Зоны без мытья",
+          "color_no_mop_zones_alpha": "Прозрачность зон без мытья",
+          "color_no_mop_zones_outline": "Контур зон без мытья",
+          "color_no_mop_zones_outline_alpha": "Прозрачность контура",
+          "color_obstacle": "Препятствие",
+          "color_obstacle_alpha": "Прозрачность препятствия",
+          "color_obstacle_with_photo": "Препятствие (с фото)",
+          "color_obstacle_with_photo_alpha": "Прозрачность (препятствие с фото)",
+          "color_path": "Путь движения",
+          "color_path_alpha": "Прозрачность пути",
+          "color_predicted_path": "Прогнозируемый путь",
+          "color_predicted_path_alpha": "Прозрачность прогнозируемого пути",
+          "color_robo": "Робот",
+          "color_robo_alpha": "Прозрачность робота",
+          "color_robo_outline": "Контур робота",
+          "color_robo_outline_alpha": "Прозрачность контура",
+          "color_room_names": "Названия комнат",
+          "color_room_names_alpha": "Прозрачность названий",
+          "color_scan": "Сканирование",
+          "color_scan_alpha": "Прозрачность сканирования",
+          "color_unknown": "Неизвестные объекты",
+          "color_unknown_alpha": "Прозрачность неизвестных объектов",
+          "color_virtual_walls": "Виртуальные стены",
+          "color_virtual_walls_alpha": "Прозрачность виртуальных стен",
+          "color_zones": "Зоны уборки",
+          "color_zones_alpha": "Прозрачность зон уборки",
+          "color_zones_outline": "Контур зон уборки",
+          "color_zones_outline_alpha": "Прозрачность контура"
+        }
+      },
+      "room_colors_step1": {
+        "description": "Выберите комнаты для настройки цветов",
+        "data": {
+          "room_color_ids": "ID комнат"
+        }
+      },
+      "room_colors_step2": {
+        "description": "Настройте цвета комнат",
+        "data": {}
+      },
+      "drawables": {
+        "description": "Выберите элементы для отображения на карте",
+        "data": {
+          "drawables": "Элементы карты"
+        }
+      },
+      "sizes": {
+        "description": "Настройка размеров элементов карты",
+        "data": {
+          "charger_radius": "Радиус зарядной станции",
+          "ignored_obstacle_radius": "Радиус игнорируемого препятствия",
+          "ignored_obstacle_with_photo_radius": "Радиус игнорируемого препятствия (с фото)",
+          "mop_path_width": "Ширина пути мытья",
+          "obstacle_radius": "Радиус препятствия",
+          "obstacle_with_photo_radius": "Радиус препятствия (с фото)",
+          "vacuum_radius": "Радиус робота",
+          "path_width": "Ширина пути движения"
+        }
+      }
+    }
+  },
+  "selector": {
+    "drawables": {
+      "options": {
+        "charger": "Зарядная станция",
+        "cleaned_area": "Очищенная зона",
+        "goto_path": "Путь к цели",
+        "ignored_obstacles": "Игнорируемые препятствия",
+        "ignored_obstacles_with_photo": "Игнорируемые препятствия (с фото)",
+        "mop_path": "Путь мытья",
+        "no_carpet_zones": "Зоны без ковров",
+        "no_go_zones": "Запретные зоны",
+        "no_mopping_zones": "Зоны без мытья",
+        "obstacles": "Препятствия",
+        "obstacles_with_photo": "Препятствия (с фото)",
+        "path": "Путь движения",
+        "predicted_path": "Прогнозируемый путь",
+        "room_names": "Названия комнат",
+        "vacuum_position": "Положение робота",
+        "virtual_walls": "Виртуальные стены",
+        "zones": "Зоны уборки"
+      }
+    }
+  }
+}

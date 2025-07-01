@@ -22,10 +22,31 @@ from ..utils.exceptions import (
     TwoFactorAuthRequiredException,
     InvalidCredentialsException,
     FailedLoginException,
-    FailedConnectionException
+    FailedConnectionException,
+    CaptchaRequiredException
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+
+@dataclass
+class XiaomiCloudConnectorConfig:
+    username: str
+    password: str
+    server: str
+    user_id: str
+    service_token: str
+    expiration: datetime.datetime
+    ssecurity: str
+    device_id: str
+
+    @classmethod
+    def from_dict(cls, data: "dict[str,str] | XiaomiCloudConnectorConfig") -> "XiaomiCloudConnectorConfig":
+        if isinstance(data, XiaomiCloudConnectorConfig):
+            return data
+        data = data.copy()
+        data["expiration"] = datetime.datetime.fromisoformat(data["expiration"])
+        return cls(**data)
 
 
 @dataclass
@@ -88,16 +109,16 @@ class XiaomiCloudConnector:
         self._timezone = f"GMT{timezone[:-2]}:{timezone[-2:]}"
         self.server = server
         self._session_data = None
+        self.device_id = generate_device_id()
 
     async def create_session(self: Self) -> None:
         if self._session_data is not None and self._session_data.session is not None:
             self._session_data.session.detach()
-        agent = generate_agent()
-        device_id = generate_device_id()
+        agent = generate_agent(self.device_id)
         session = self._session_creator()
         cookies = {
             "sdkVerdion": "accountsdk-18.8.15",
-            "deviceId": device_id
+            "deviceId": self.device_id
         }
         session.cookie_jar.update_cookies(cookies, response_url=URL("mi.com"))
         session.cookie_jar.update_cookies(cookies, response_url=URL("xiaomi.com"))
@@ -130,7 +151,7 @@ class XiaomiCloudConnector:
         _LOGGER.debug("Xiaomi cloud login - step 1 sign missing")
         return ""
 
-    async def _login_step_2(self: Self, sign: str) -> str:
+    async def _login_step_2(self: Self, sign: str, captcha_code: str | None = None) -> str:
         _LOGGER.debug("Xiaomi cloud login - step 2")
         url = "https://account.xiaomi.com/pass/serviceLoginAuth2"
         params = {
@@ -142,8 +163,8 @@ class XiaomiCloudConnector:
             "_sign": sign,
             "_json": "true"
         }
-        if sign:
-            params["_sign"] = sign
+        if captcha_code:
+            params["captCode"] = captcha_code
         try:
             response = await self._session_data.post(url, params=params)
             _LOGGER.debug("Xiaomi cloud login - step 2 status: %s", response.status)
@@ -169,6 +190,15 @@ class XiaomiCloudConnector:
                         "as your Home Assistant instance: %s ",
                         response_json["notificationUrl"])
                     raise TwoFactorAuthRequiredException(response_json["notificationUrl"])
+                elif "captchaUrl" in response_json and response_json["captchaUrl"] is not None:
+                    captcha_url = response_json["captchaUrl"]
+                    if captcha_url.startswith("/"):
+                        captcha_url = "https://account.xiaomi.com" + response_json["captchaUrl"]
+
+                    captcha_response = await self._session_data.get(captcha_url)
+                    captcha_response_b64 = "data:image/jpeg;base64," + base64.b64encode(await captcha_response.read()).decode("utf-8")
+
+                    raise CaptchaRequiredException(captcha_response_b64, sign)
         raise InvalidCredentialsException()
 
     async def _login_step_3(self: Self, location: str) -> None:
@@ -194,6 +224,15 @@ class XiaomiCloudConnector:
         else:
             location = sign
         await self._login_step_3(location)
+        _LOGGER.debug("Logged in.")
+        return self._session_data.serviceToken
+
+    async def login_with_captcha(self: Self, sign: str, captcha_code: str) -> str | None:
+        _LOGGER.debug("Continuing login with captcha entered.")
+
+        location = await self._login_step_2(sign, captcha_code)
+        await self._login_step_3(location)
+
         _LOGGER.debug("Logged in.")
         return self._session_data.serviceToken
 
@@ -337,3 +376,32 @@ class XiaomiCloudConnector:
     def _signed_nonce(self: Self, nonce: str) -> str:
         hash_object = hashlib.sha256(base64.b64decode(self._session_data.ssecurity) + base64.b64decode(nonce))
         return base64.b64encode(hash_object.digest()).decode()
+
+    def to_config(self: Self) -> XiaomiCloudConnectorConfig:
+        return XiaomiCloudConnectorConfig(
+            self._username,
+            self._password,
+            self.server,
+            self._session_data.userId,
+            self._session_data.serviceToken,
+            self._session_data.expiration,
+            self._session_data.ssecurity,
+            self.device_id
+        )
+
+    @staticmethod
+    async def from_config(config: XiaomiCloudConnectorConfig, session_creator: Callable[[], ClientSession]):
+        connector = XiaomiCloudConnector(session_creator,
+                                         config.username,
+                                         config.password,
+                                         server=config.server)
+        connector.device_id = config.device_id
+
+        await connector.create_session()
+
+        connector._session_data.userId = config.user_id
+        connector._session_data.serviceToken = config.service_token
+        connector._session_data.ssecurity = config.ssecurity
+        connector._session_data.expiration = config.expiration
+
+        return connector

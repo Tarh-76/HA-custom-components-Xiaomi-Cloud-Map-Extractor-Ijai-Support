@@ -56,11 +56,14 @@ AVAILABLE_APIS = {
     VacuumApi.ROIDMI: ["roidmi.vacuum.", "zhimi.vacuum.", "chuangmi.vacuum."],
     VacuumApi.VIOMI: ["viomi.vacuum."],
     VacuumApi.ROBOROCK: ["roborock.vacuum", "rockrobo.vacuum"],
-    VacuumApi.IJAI: ["xiaomi.vacuum.", "ijai.vacuum."]
+    VacuumApi.IJAI: ["ijai.vacuum."]
 }
 
 API_EXCEPTIONS = {
     "viomi.vacuum.v18": VacuumApi.ROIDMI,
     "viomi.vacuum.v23": VacuumApi.ROIDMI,
     "viomi.vacuum.v38": VacuumApi.ROIDMI,
+    "xiaomi.vacuum.c103": VacuumApi.IJAI,
+    "xiaomi.vacuum.c104": VacuumApi.IJAI,
+    "xiaomi.vacuum.b106eu": VacuumApi.IJAI
 }

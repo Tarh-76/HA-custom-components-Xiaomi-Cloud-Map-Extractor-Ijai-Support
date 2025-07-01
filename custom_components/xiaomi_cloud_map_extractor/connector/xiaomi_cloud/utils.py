@@ -13,13 +13,12 @@ def generate_nonce(millis: int):
     return base64.b64encode(nonce_bytes).decode()
 
 
-def generate_agent() -> str:
-    agent_id = "".join((chr(random.randint(65, 69)) for _ in range(13)))
-    return f"Android-7.1.1-1.0.0-ONEPLUS A3010-136-{agent_id} APP/xiaomi.smarthome APPV/62830"
+def generate_agent(device_id) -> str:
+    return f"Android-7.1.1-1.0.0-ONEPLUS A3010-136-{device_id} APP/xiaomi.smarthome APPV/62830"
 
 
 def generate_device_id() -> str:
-    return "".join((chr(random.randint(97, 122)) for _ in range(6)))
+    return "".join((chr(random.randint(97, 122)) for _ in range(13)))
 
 
 def generate_signature(url, signed_nonce: str, nonce: str, params: dict[str, str]) -> str:

@@ -4,17 +4,16 @@ from homeassistant.const import (
     CONF_HOST,
     CONF_TOKEN,
     CONF_MAC,
-    CONF_USERNAME,
-    CONF_PASSWORD,
     CONF_MODEL,
     CONF_DEVICE_ID, CONF_NAME
 )
 from homeassistant.helpers.device_registry import DeviceInfo, CONNECTION_NETWORK_MAC
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .connector.xiaomi_cloud.connector import XiaomiCloudConnectorConfig
 from .connector.model import XiaomiCloudMapExtractorData
 from .connector.vacuums.base.model import VacuumApi
-from .const import CONF_SERVER, CONF_USED_MAP_API, DOMAIN
+from .const import CONF_USED_MAP_API, DOMAIN, CONF_CONNECTOR_CONFIG
 from .coordinator import XiaomiCloudMapExtractorDataUpdateCoordinator
 from .types import XiaomiCloudMapExtractorConfigEntry
 
@@ -41,12 +40,10 @@ class XiaomiCloudMapExtractorEntity(CoordinatorEntity[XiaomiCloudMapExtractorDat
         self._host = config_entry.data[CONF_HOST]
         self._token = config_entry.data[CONF_TOKEN]
         self._mac = config_entry.data[CONF_MAC]
-        self._username = config_entry.data[CONF_USERNAME]
-        self._password = config_entry.data[CONF_PASSWORD]
+        self._connector_config = XiaomiCloudConnectorConfig.from_dict(config_entry.data[CONF_CONNECTOR_CONFIG])
         self._model = config_entry.data[CONF_MODEL]
         self._name = config_entry.data[CONF_NAME]
         self._device_id = config_entry.data[CONF_DEVICE_ID]
-        self._server = config_entry.data[CONF_SERVER]
         self._used_map_api = VacuumApi(config_entry.data[CONF_USED_MAP_API])
         self._attr_device_info = DeviceInfo(
             connections={(CONNECTION_NETWORK_MAC, self._mac)},

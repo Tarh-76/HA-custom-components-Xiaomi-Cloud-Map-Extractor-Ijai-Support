@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 import logging
+from functools import partial
+from dataclasses import asdict
 
 from homeassistant.const import (
     CONF_HOST,
     CONF_TOKEN,
     CONF_MAC,
-    CONF_USERNAME,
-    CONF_PASSWORD,
     CONF_MODEL,
-    CONF_DEVICE_ID
+    CONF_DEVICE_ID,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
@@ -21,8 +21,8 @@ from vacuum_map_parser_base.config.size import Sizes, Size
 from .connector import XiaomiCloudMapExtractorConnector
 from .connector.model import XiaomiCloudMapExtractorConnectorConfiguration
 from .connector.vacuums.base.model import VacuumApi
+from .connector.xiaomi_cloud.connector import XiaomiCloudConnectorConfig
 from .const import (
-    CONF_SERVER,
     CONF_USED_MAP_API,
     PLATFORMS,
     CONF_SIZES,
@@ -35,7 +35,8 @@ from .const import (
     CONF_IMAGE_CONFIG_TRIM_RIGHT,
     CONF_IMAGE_CONFIG_TRIM_TOP,
     CONF_IMAGE_CONFIG_TRIM_BOTTOM,
-    CONF_ROOM_COLORS
+    CONF_ROOM_COLORS,
+    CONF_CONNECTOR_CONFIG
 )
 from .coordinator import XiaomiCloudMapExtractorDataUpdateCoordinator
 from .types import XiaomiCloudMapExtractorConfigEntry, XiaomiCloudMapExtractorRuntimeData
@@ -45,8 +46,12 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass: HomeAssistant, entry: XiaomiCloudMapExtractorConfigEntry) -> bool:
     xcme_configuration = to_configuration(entry)
+    
     session_creator = lambda: async_create_clientsession(hass)
-    xcme_connector = XiaomiCloudMapExtractorConnector(session_creator, xcme_configuration)
+
+    session_update_callback = partial(on_connector_session_update, hass, entry)
+    xcme_connector = XiaomiCloudMapExtractorConnector(session_creator, session_update_callback, xcme_configuration)
+
     xcme_update_coordinator = XiaomiCloudMapExtractorDataUpdateCoordinator(hass, xcme_connector)
     await xcme_update_coordinator.async_config_entry_first_refresh()
     entry.runtime_data = XiaomiCloudMapExtractorRuntimeData(xcme_update_coordinator)
@@ -63,6 +68,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: XiaomiCloudMapExtractor
 async def async_reload_entry(hass: HomeAssistant, entry: XiaomiCloudMapExtractorConfigEntry) -> None:
     await hass.config_entries.async_reload(entry.entry_id)
 
+def on_connector_session_update(hass: HomeAssistant, entry: XiaomiCloudMapExtractorConfigEntry, new_config: XiaomiCloudConnectorConfig) -> None:
+    updated_config = {**entry.data, CONF_CONNECTOR_CONFIG: asdict(new_config)}
+    hass.config_entries.async_update_entry(entry, data=updated_config)
 
 def to_configuration(entry: XiaomiCloudMapExtractorConfigEntry) -> XiaomiCloudMapExtractorConnectorConfiguration:
     host = entry.data[CONF_HOST]
@@ -70,9 +78,7 @@ def to_configuration(entry: XiaomiCloudMapExtractorConfigEntry) -> XiaomiCloudMa
     device_id = entry.data[CONF_DEVICE_ID]
     model = entry.data[CONF_MODEL]
     mac = entry.data[CONF_MAC]
-    username = entry.data[CONF_USERNAME]
-    password = entry.data[CONF_PASSWORD]
-    server = entry.data[CONF_SERVER]
+    connector_config = XiaomiCloudConnectorConfig.from_dict(entry.data[CONF_CONNECTOR_CONFIG])
     used_api = VacuumApi(entry.data[CONF_USED_MAP_API])
 
     scale = entry.options[CONF_IMAGE_CONFIG][CONF_IMAGE_CONFIG_SCALE]
@@ -96,9 +102,7 @@ def to_configuration(entry: XiaomiCloudMapExtractorConfigEntry) -> XiaomiCloudMa
     config = XiaomiCloudMapExtractorConnectorConfiguration(
         host,
         token,
-        username,
-        password,
-        server,
+        connector_config,
         used_api,
         device_id,
         mac,

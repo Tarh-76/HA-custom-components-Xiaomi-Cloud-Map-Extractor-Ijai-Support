@@ -54,6 +54,8 @@ class IjaiCloudVacuum(BaseXiaomiCloudVacuumV2):
                 self._off_counter = 0
                 return True
         except DeviceException as de:
+            if "No response" in repr(de):
+                return False
             raise InvalidDeviceTokenException()
 
     @staticmethod

@@ -28,7 +28,7 @@ from .vacuums.vacuum_roidmi import RoidmiCloudVacuum
 from .vacuums.vacuum_unsupported import UnsupportedCloudVacuum
 from .vacuums.vacuum_viomi import ViomiCloudVacuum
 from .vacuums.vacuum_ijai import IjaiCloudVacuum
-from .xiaomi_cloud.connector import XiaomiCloudConnector, XiaomiCloudDeviceInfo
+from .xiaomi_cloud.connector import XiaomiCloudConnector, XiaomiCloudDeviceInfo, XiaomiCloudConnectorConfig
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -49,16 +49,18 @@ class XiaomiCloudMapExtractorConnector:
     _vacuum_connector: BaseXiaomiCloudVacuum | None
     _map_cache: XiaomiCloudMapExtractorData
     _status: XiaomiCloudMapExtractorConnectorStatus
-    _server: str | None
 
-    def __init__(self: Self, session_creator: Callable[[], ClientSession],
+    def __init__(self: Self,
+                 session_creator: Callable[[], ClientSession],
+                 on_session_update: Callable[[XiaomiCloudConnectorConfig], None],
                  config: XiaomiCloudMapExtractorConnectorConfiguration) -> None:
         self._config = config
-        self._cloud_connector = XiaomiCloudConnector(session_creator, self._config.username, self._config.password)
+        self._on_session_update = on_session_update
+        self._session_creator = session_creator
+        self._cloud_connector = None
         self._vacuum_connector: BaseXiaomiCloudVacuum | None = None
         self._map_cache = XiaomiCloudMapExtractorData()
         self._status: XiaomiCloudMapExtractorConnectorStatus = XiaomiCloudMapExtractorConnectorStatus.UNINITIALIZED
-        self._server = None
         self._used_api = self._config.used_api
 
     async def get_data(self: Self) -> XiaomiCloudMapExtractorData:
@@ -70,13 +72,17 @@ class XiaomiCloudMapExtractorConnector:
         return self._map_cache
 
     async def _update(self: Self) -> None:
-        if not self._is_authenticated():
-            _LOGGER.debug("Logging in...")
+        if not self._is_authenticated() and self._cloud_connector is not None:
+            _LOGGER.debug("Session is outdated, logging in again...")
             await self._cloud_connector.login()
+
             if not self._is_authenticated():
                 _LOGGER.error("Not authenticated!")
                 raise FailedLoginException()
-            _LOGGER.debug("Logged in.")
+
+            self._on_session_update(self._cloud_connector.to_config())
+            _LOGGER.debug("Logged in, config updated")
+
         if self._vacuum_connector is None or self._status == XiaomiCloudMapExtractorConnectorStatus.UNINITIALIZED:
             _LOGGER.debug("Initializing...")
             await self._initialize()
@@ -93,12 +99,15 @@ class XiaomiCloudMapExtractorConnector:
         self._map_cache.map_data_raw = map_raw_data
 
     def _is_authenticated(self: Self) -> bool:
-
-        return self._cloud_connector.is_authenticated()
+        return self._status != XiaomiCloudMapExtractorConnectorStatus.UNINITIALIZED and self._cloud_connector.is_authenticated()
 
     async def _initialize(self: Self) -> None:
-        _LOGGER.debug("Retrieving device info, server: %s", self._config.server)
-        device_details = await self._cloud_connector.get_device_details(self._config.token, self._config.server)
+        if self._cloud_connector is None:
+            _LOGGER.debug("Initializing connector")
+            self._cloud_connector = await XiaomiCloudConnector.from_config(self._config.connector_config, self._session_creator)
+
+        _LOGGER.debug("Retrieving device info, server: %s", self._config.connector_config.server)
+        device_details = await self._cloud_connector.get_device_details(self._config.token, self._config.connector_config.server)
 
         if device_details is not None:
             self._server = device_details.server
@@ -141,7 +150,7 @@ class XiaomiCloudMapExtractorConnector:
         vacuum_config = VacuumConfig(
             self._cloud_connector,
             device_details,
-            self._config.server,
+            self._config.connector_config.server,
             self._config.device_id,
             self._config.host,
             self._config.token,
