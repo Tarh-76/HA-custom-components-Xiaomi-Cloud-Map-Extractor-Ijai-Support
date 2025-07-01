@@ -10,7 +10,7 @@ from vacuum_map_parser_ijai.map_data_parser import IjaiMapDataParser
 from vacuum_map_parser_ijai.status_mapping import get_status_mapping
 from .base.vacuum_v2 import BaseXiaomiCloudVacuumV2
 from .base.model import VacuumConfig, VacuumApi
-from ..utils.exceptions import InvalidDeviceTokenException
+from ..utils.exceptions import FailedConnectionException
 
 _LOGGER = logging.getLogger(__name__)
 OFF_UPDATES = 3
@@ -26,7 +26,7 @@ class IjaiCloudVacuum(BaseXiaomiCloudVacuumV2):
         self._mac = vacuum_config.device_info.mac
         self._wifi_info_sn = None
 
-        self._miot_device = MiotDevice(self._host, self._token)
+        self._miot_device = MiotDevice(self._host, self._token, timeout=2)
 
         self._ijai_map_data_parser = IjaiMapDataParser(
             vacuum_config.palette,
@@ -54,9 +54,9 @@ class IjaiCloudVacuum(BaseXiaomiCloudVacuumV2):
                 self._off_counter = 0
                 return True
         except DeviceException as de:
-            if "No response" in repr(de):
+            if "token" not in repr(de):
                 return False
-            raise InvalidDeviceTokenException()
+            raise FailedConnectionException(de)
 
     @staticmethod
     def vacuum_platform() -> VacuumApi:
@@ -130,9 +130,9 @@ class IjaiCloudVacuum(BaseXiaomiCloudVacuumV2):
                     self._wifi_info_sn = self.get_wifi_info_sn()
                     _LOGGER.debug(f"Got wifi_sn {self._wifi_info_sn}")
                     break
-                except:
+                except Exception as ex:
                     _LOGGER.error("Failed to get wifi_sn from vacuum")
-                    raise InvalidDeviceTokenException()
+                    raise FailedConnectionException(ex)
 
         decoded_map = self.map_data_parser.unpack_map(
             raw_map,
