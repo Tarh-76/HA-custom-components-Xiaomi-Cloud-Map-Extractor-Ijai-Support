@@ -120,12 +120,8 @@ class XiaomiCloudMapExtractorFlowHandler(ConfigFlow, domain=DOMAIN):
             if await self._connector.login() is None:
                 errors["base"] = "cloud_login_error"
         except TwoFactorAuthRequiredException as e:
-            errors["base"] = "two_factor_auth_required"  # todo 2fa
-
-            return self.async_show_form(
-                step_id="cloud", data_schema=CLOUD_SCHEMA, errors=errors,
-                description_placeholders={"two_factor_url": e.url}
-            )
+            self._2fa_url = e.url
+            return await self.async_step_2fa()
         except CaptchaRequiredException as e:
             self._captcha_image = e.captcha_image
             self._sign = e.sign
@@ -138,6 +134,32 @@ class XiaomiCloudMapExtractorFlowHandler(ConfigFlow, domain=DOMAIN):
             _LOGGER.error(e, exc_info=True)
             return self.async_abort(reason="unknown")
 
+        return await self._post_login()
+    
+    async def async_step_2fa(self, user_input=None):
+        errors = {}
+
+        if user_input is None:
+            return self.async_show_form(
+                step_id="2fa",
+                data_schema=vol.Schema({
+                    vol.Required("code"): str,
+                }),
+                description_placeholders={"two_factor_url": self._2fa_url},
+                errors=errors
+            )
+
+        code = user_input["code"]
+        try:
+            await self._connector.login_with_2fa(self._2fa_url, code)
+        except XiaomiCloudMapExtractorException:
+            errors["base"] = "cloud_login_error"
+        except Exception as e:
+            _LOGGER.error(
+                "Unexpected exception while attempting Miio cloud login")
+            _LOGGER.error(e, exc_info=True)
+            return self.async_abort(reason="unknown")
+        
         return await self._post_login()
 
     async def async_step_captcha(self, user_input=None):

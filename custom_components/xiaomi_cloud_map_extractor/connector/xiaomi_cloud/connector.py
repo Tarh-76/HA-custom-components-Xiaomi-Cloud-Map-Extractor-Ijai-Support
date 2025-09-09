@@ -45,7 +45,7 @@ class XiaomiCloudConnectorConfig:
         if isinstance(data, XiaomiCloudConnectorConfig):
             return data
         data = data.copy()
-        data["expiration"] = datetime.datetime.fromisoformat(data["expiration"])
+        data["expiration"] = datetime.datetime.fromisoformat(str(data["expiration"]))
         return cls(**data)
 
 
@@ -142,13 +142,20 @@ class XiaomiCloudConnector:
         except:
             raise FailedLoginException()
 
-        successful = response.status == 200 and "_sign" in response_json
-        if successful:
-            sign = response_json["_sign"]
-            _LOGGER.debug("Xiaomi cloud login - step 1 sign: %s", sign)
-            return sign
+        if response.status == 200:
+            if "_sign" in response_json:
+                sign = response_json["_sign"]
+                _LOGGER.debug("Xiaomi cloud login - step 1 sign: %s", sign)
+                return sign
+            elif "ssecurity" in response_json:
+                self._session_data.ssecurity = response_json["ssecurity"]
+                self._session_data.userId = response_json["userId"]
+                max_age = int(response.cookies.get("userId").get("max-age"))
+                self._session_data.expiration = datetime.datetime.now() + datetime.timedelta(seconds=max_age)
 
-        _LOGGER.debug("Xiaomi cloud login - step 1 sign missing")
+                return response_json["location"]
+
+        _LOGGER.debug("Xiaomi cloud login - step 1 sign/ssecurity missing")
         return ""
 
     async def _login_step_2(self: Self, sign: str, captcha_code: str | None = None) -> str:
@@ -184,11 +191,6 @@ class XiaomiCloudConnector:
                 return location
             else:
                 if "notificationUrl" in response_json:
-                    _LOGGER.error(
-                        "Additional authentication required. " +
-                        "Open following URL using device that has the same public IP, " +
-                        "as your Home Assistant instance: %s ",
-                        response_json["notificationUrl"])
                     raise TwoFactorAuthRequiredException(response_json["notificationUrl"])
                 elif "captchaUrl" in response_json and response_json["captchaUrl"] is not None:
                     captcha_url = response_json["captchaUrl"]
@@ -200,6 +202,46 @@ class XiaomiCloudConnector:
 
                     raise CaptchaRequiredException(captcha_response_b64, sign)
         raise InvalidCredentialsException()
+
+    async def verify_ticket(self, verify_url, ticket):
+        path = 'identity/authStart'
+        if path not in verify_url:
+            return None
+        resp = await self._session_data.get(verify_url.replace(path, 'identity/list'))
+        identity_session = resp.cookies.get('identity_session')
+        if not identity_session:
+            return False
+        data = to_json(await resp.text()) or {}
+        flag = data.get('flag', 4)
+        options = data.get('options', [flag])
+
+        for flag in options:
+            api = {
+                4: '/identity/auth/verifyPhone',
+                8: '/identity/auth/verifyEmail',
+            }.get(flag)
+            if not api:
+                continue
+            resp = await self._session_data.post(
+                'https://account.xiaomi.com' + api,
+                params={
+                    '_dc': int(time.time() * 1000),
+                },
+                data={
+                    '_flag': flag,
+                    'ticket': ticket,
+                    'trust': 'true',
+                    '_json': 'true',
+                },
+                cookies={
+                    'identity_session': identity_session,
+                },
+            )
+            data = to_json(await resp.text())
+            if data.get('code') == 0:
+                return data
+
+        return False
 
     async def _login_step_3(self: Self, location: str) -> None:
         _LOGGER.debug("Xiaomi cloud login - step 3 (location: %s)", location)
@@ -235,6 +277,21 @@ class XiaomiCloudConnector:
 
         _LOGGER.debug("Logged in.")
         return self._session_data.serviceToken
+    
+    async def login_with_2fa(self: Self, verify_url: str, code: str) -> str | None:
+        json_resp = await self.verify_ticket(verify_url, code)
+        if not json_resp:
+            raise InvalidCredentialsException()
+        
+        location = json_resp["location"]
+        await self._session_data.get(location, allow_redirects=True)
+
+        location = await self._login_step_1()
+        await self._login_step_3(location)
+        
+        _LOGGER.debug("Logged in.")
+        return self._session_data.serviceToken
+
 
     def is_authenticated(self: Self) -> bool:
         return self._session_data is not None and self._session_data.is_authenticated()

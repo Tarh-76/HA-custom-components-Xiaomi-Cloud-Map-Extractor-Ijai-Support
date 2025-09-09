@@ -28,6 +28,12 @@
         },
         "description": "Input code from picture below\n![]({captcha_url})"
       },
+      "2fa": {
+        "data": {
+          "code": "Two factor authentication code"
+        },
+        "description": "Two factor authentication required, use [this link]({two_factor_url}) to obtain 2FA code.\n**Do not enter the code on Xiaomi website!**"
+      },
       "confirm_data": {
         "data": {
           "host": "IP address",
