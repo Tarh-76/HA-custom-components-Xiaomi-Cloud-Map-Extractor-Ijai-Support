@@ -279,16 +279,23 @@ class XiaomiCloudConnector:
         return self._session_data.serviceToken
     
     async def login_with_2fa(self: Self, verify_url: str, code: str) -> str | None:
+        _LOGGER.debug("Continuing login with 2fa entered.")
+
         json_resp = await self.verify_ticket(verify_url, code)
         if not json_resp:
             raise InvalidCredentialsException()
+        _LOGGER.debug("Xiaomi cloud login - 2fa verify_ticket result %s", json_resp)
         
-        location = json_resp["location"]
-        await self._session_data.get(location, allow_redirects=True)
+        await self._session_data.get(json_resp["location"], allow_redirects=True)
 
-        location = await self._login_step_1()
+        sign = await self._login_step_1()
+
+        if not sign.startswith('http'):
+            location = await self._login_step_2(sign)
+        else:
+            location = sign
         await self._login_step_3(location)
-        
+            
         _LOGGER.debug("Logged in.")
         return self._session_data.serviceToken
 
