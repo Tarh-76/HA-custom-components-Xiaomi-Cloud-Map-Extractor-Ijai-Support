@@ -22,6 +22,8 @@ class InvalidCredentialsException(XiaomiCloudMapExtractorException):
 class FailedLoginException(XiaomiCloudMapExtractorException):
     pass
 
+class TooManyAttemptsException(XiaomiCloudMapExtractorException):
+    pass
 
 class InvalidDeviceTokenException(XiaomiCloudMapExtractorException):
     pass
@@ -37,7 +39,7 @@ class FailedMapParseException(XiaomiCloudMapExtractorException):
 
 @dataclass
 class TwoFactorAuthRequiredException(XiaomiCloudMapExtractorException):
-    url: str
+    context: str
 
 @dataclass
 class CaptchaRequiredException(XiaomiCloudMapExtractorException):

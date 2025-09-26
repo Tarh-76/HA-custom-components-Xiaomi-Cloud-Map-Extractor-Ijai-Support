@@ -7,20 +7,29 @@
     },
     "error": {
       "cloud_login_error": "Could not login to Xiaomi Miio Cloud, check the credentials.",
-      "two_factor_auth_required": "Two factor authentication required. Use the following url and try again {two_factor_url}.",
-      "captcha_required": "Captcha required. Solve a captcha and try again.",
+      "too_many_login_attempts": "Too many login requests. Try again tomorrow.",
+      "two_factor_auth_failed": "Two factor authentication failed.",
+      "invalid_captcha": "Invalid captcha code. Try again.",
       "cloud_no_devices": "No vacuums found in this Xiaomi Miio cloud account.",
-      "invalid_vacuum": "Connection to vacuum failed, please check the configuration."
+      "invalid_vacuum": "Connection to vacuum failed, please check the configuration.",
+      "qr_code_unavailable": "Unable to obtain QR code. Try again.",
+      "qr_login_step_2_failed": "Unable to continue login by QR code."
     },
     "flow_title": "{name}",
     "step": {
+      "login_method": {
+        "data": {
+          "method": "Login method",
+          "server": "Server"
+        },
+        "description": "Select preferred login method.\nSee https://www.openhab.org/addons/bindings/miio/#country-servers for the cloud server to use."
+      },
       "cloud": {
         "data": {
-          "country": "Server",
           "password": "Password",
           "username": "Username"
         },
-        "description": "Log in to the Xiaomi Miio cloud, see https://www.openhab.org/addons/bindings/miio/#country-servers for the cloud server to use."
+        "description": "Log in to the Xiaomi Miio cloud"
       },
       "captcha": {
         "data": {
@@ -32,7 +41,10 @@
         "data": {
           "code": "Two factor authentication code"
         },
-        "description": "Two factor authentication required, use [this link]({two_factor_url}) to obtain 2FA code.\n**Do not enter the code on Xiaomi website!**"
+        "description": "Two factor authentication required, check your email inbox for code."
+      },
+      "qr": {
+        "description": "Visit [account.xiaomi.com](https://account.xiaomi.com), log in to your account.\nThen open [this link]({link}) or scan qr-code below and click 'Submit', then accept log in with webpage.\n![]({qr_image})"
       },
       "confirm_data": {
         "data": {
@@ -206,6 +218,12 @@
         "vacuum_position": "Vacuum position",
         "virtual_walls": "Virtual walls",
         "zones": "Zones"
+      }
+    },
+    "auth_method": {
+      "options": {
+        "qr": "QR-code",
+        "cloud": "Username and password"
       }
     }
   }

@@ -7,20 +7,29 @@
     },
     "error": {
       "cloud_login_error": "Не удалось войти в Xiaomi Miio Cloud, проверьте учётные данные.",
-      "two_factor_auth_required": "Требуется двухфакторная аутентификация. Откройте URL: {two_factor_url} и повторите попытку.",
-      "captcha_required": "Требуется ввод капчи. Решите капчу и повторите попытку.",
+      "too_many_login_attempts": "Слишком много попыток входа. Попробуйте ещё раз завтра.",
+      "two_factor_auth_failed": "Двухэтапная аутентификация не удалась.",
+      "invalid_captcha": "Неверный код капчи. Попробуйте снова.",
       "cloud_no_devices": "В аккаунте Xiaomi Miio Cloud не найдено пылесосов.",
-      "invalid_vacuum": "Не удалось подключиться к пылесосу, проверьте конфигурацию."
+      "invalid_vacuum": "Не удалось подключиться к пылесосу, проверьте конфигурацию.",
+      "qr_code_unavailable": "Невозможно получить QR-код. Попробуйте ещё раз.",
+      "qr_login_step_2_failed": "Невозможно войти по QR-коду. Проверьте логи."
     },
     "flow_title": "{name}",
     "step": {
+      "login_method": {
+        "data": {
+          "method": "Метод входа",
+          "server": "Сервер"
+        },
+        "description": "Выберите метод входа.\nСерверы по странам: https://www.openhab.org/addons/bindings/miio/#country-servers."
+      },
       "cloud": {
         "data": {
-          "country": "Сервер",
           "password": "Пароль",
           "username": "Логин"
         },
-        "description": "Войдите в Xiaomi Miio Cloud. Серверы по странам: https://www.openhab.org/addons/bindings/miio/#country-servers."
+        "description": "Войдите в Xiaomi Miio Cloud."
       },
       "captcha": {
         "data": {
@@ -32,7 +41,10 @@
         "data": {
           "code": "Код двухэтапной аутентификации"
         },
-        "description": "Требуется двухфакторная аутентификация, перейдите по [этой ссылке]({two_factor_url}), чтобы получить код двухэтапной аутентификации.\n**Не вводите код на сайте Xiaomi!**"
+        "description": "Необходима двухэтапная аутентификация, проверьте электронную почту на наличие кода."
+      },
+      "qr": {
+        "description": "Посетите [account.xiaomi.com](https://account.xiaomi.com) и войдите в свой аккаунт.\nЗатем откройте [эту ссылку]({link}) или отсканируйте QR-код и нажмите 'Подтвердить', после чего подтвердите вход на веб-странице.\n![]({qr_image})"
       },
       "confirm_data": {
         "data": {
@@ -205,6 +217,12 @@
         "vacuum_position": "Положение робота",
         "virtual_walls": "Виртуальные стены",
         "zones": "Зоны уборки"
+      }
+    },
+    "auth_method": {
+      "options": {
+        "qr": "QR-код",
+        "cloud": "Логин и пароль"
       }
     }
   }
